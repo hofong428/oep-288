@@ -1,0 +1,39 @@
+name: sanitize
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  leak-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # gitleaks：快速偵測常見金鑰/密碼
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # 無也可
+        with:
+          args: detect --verbose --no-banner --redact --exit-code 1
+      # truffleHog：補充掃描假端點/憑證模式
+      - name: Run trufflehog
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          path: .
+          base: HEAD~1
+          head: HEAD
+          redact: true
+  block-prod-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on forbidden patterns
+        run: |
+          egrep -RIn --exclude-dir=.git --exclude-dir=.github \
+            -e 'AKIA[0-9A-Z]{16}' \
+            -e '-----BEGIN (RSA|EC|PRIVATE) KEY-----' \
+            -e 'prod[-_.]endpoint' \
+            -e 'real[-_.]url' \
+            -e 'Bearer [A-Za-z0-9_\-\.]+' . && { echo "Forbidden pattern found"; exit 1; } || echo "OK"
