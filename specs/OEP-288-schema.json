@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OEP-288 Receipt (Public-Minimal)",
+  "type": "object",
+  "required": ["id","ts","subject","input_hash","output_hash","env","merkle","transparency","signatures"],
+  "properties": {
+    "id": { "type": "string" },
+    "ts": { "type": "string", "format": "date-time" },
+    "subject": {
+      "type": "object",
+      "required": ["type","name"],
+      "properties": {
+        "type": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "input_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "output_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "env": {
+      "type": "object",
+      "required": ["cloud","region"],
+      "properties": {
+        "cloud": { "type": "string" },
+        "region": { "type": "string" },
+        "tcb": { "type": "string" }
+      }
+    },
+    "attest_ref": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "quote_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "merkle": {
+      "type": "object",
+      "required": ["root"],
+      "properties": {
+        "root": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "transparency": {
+      "type": "object",
+      "required": ["rekor_entry_uuid"],
+      "properties": {
+        "rekor_entry_uuid": { "type": "string" }
+      }
+    },
+    "signatures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["signer","timestamp","signature","algorithm"],
+        "properties": {
+          "signer": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "signature": { "type": "string" },
+          "algorithm": { "type": "string" }
+        }
+      }
+    }
+  }
+}
